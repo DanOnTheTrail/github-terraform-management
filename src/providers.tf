@@ -1,7 +1,10 @@
 terraform {
   cloud {
     organization = "cherry-space"
-    hostname = "app.terraform.io"
+
+    workspaces {
+      name = "github-terraform-management"
+    }
   }
 
   required_providers {
