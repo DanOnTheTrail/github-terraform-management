@@ -10,6 +10,13 @@ locals {
     for repo in yamldecode(file("${path.module}/../config/repos.yml")).repos :
     repo.name => repo
   }
+
+  branch_config = { for r in flatten(
+    values(
+      { for repo in local.repos : repo.name =>
+        [for rule in repo.branch_protection_rules :
+    merge(rule, { repo = repo.name })] if lookup(repo, "branch_protection_rules", {}) != {} })) :
+  "${r.repo}-${r.pattern}" => r }
 }
 
 resource "github_repository" "managed_repos" {
@@ -34,4 +41,26 @@ resource "github_repository" "managed_repos" {
   has_issues           = false
   has_projects         = false
   has_wiki             = false
+}
+
+resource "github_branch_protection" "managed_branch_protection" {
+  for_each = local.branch_config
+
+  repository_id = github_repository.managed_repos[each.value.repo].name
+  pattern    = each.value.pattern
+  enforce_admins = each.value.enforce_admins
+  require_signed_commits = each.value.require_signed_commits
+  required_linear_history = each.value.required_linear_history
+  require_conversation_resolution = each.value.require_conversation_resolution
+  allows_deletions = each.value.allows_deletions
+  allows_force_pushes = each.value.allows_force_pushes
+  required_pull_request_reviews {
+    required_approving_review_count = each.value.required_pull_request_reviews.required_approving_review_count
+    dismiss_stale_reviews = each.value.required_pull_request_reviews.dismiss_stale_reviews
+    require_code_owner_reviews = each.value.required_pull_request_reviews.require_code_owner_reviews
+  }
+  required_status_checks {
+    strict = each.value.required_status_checks.strict
+    contexts = each.value.required_status_checks.contexts
+  }
 }
