@@ -1,6 +1,6 @@
 terraform {
   cloud {
-    organization = "cherry-space"
+    organization = "cherry-spaces"
 
     workspaces {
       name = "github-terraform-management"
