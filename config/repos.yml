@@ -10,7 +10,7 @@ repos:
     description: This is a test repository
     squash_merge_commit_message: COMMIT_MESSAGES
     squash_merge_commit_title: PR_TITLE
-    visibility: private
+    visibility: public
     allow_update_branch: true
     branch_protection_rules:
       -
