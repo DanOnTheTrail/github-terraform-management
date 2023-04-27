@@ -17,6 +17,10 @@ locals {
         [for rule in repo.branch_protection_rules :
     merge(rule, { repo = repo.name })] if lookup(repo, "branch_protection_rules", {}) != {} })) :
   "${r.repo}-${r.pattern}" => r }
+
+  repo_write_access = values({ for repo in local.repos : 
+    repo.name => { for team in lookup(repo, "write_access_teams", []) :
+      "${repo.name}-${team}" => { repo = repo.name, team = team } } })[0]
 }
 
 resource "github_repository" "managed_repos" {
@@ -63,4 +67,12 @@ resource "github_branch_protection" "managed_branch_protection" {
     strict = each.value.required_status_checks.strict
     contexts = each.value.required_status_checks.contexts
   }
+}
+
+resource "github_team_repository" "repo_manged_write_access" {
+  for_each = local.repo_write_access
+
+  team_id    = github_team.managed_teams[each.value.team].id
+  repository = each.value.repo
+  permission = "push"
 }
