@@ -12,6 +12,8 @@ repos:
     squash_merge_commit_title: PR_TITLE
     visibility: public
     allow_update_branch: true
+    write_access_teams:
+      - Team1
     branch_protection_rules:
       -
         pattern: main

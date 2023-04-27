@@ -6,7 +6,7 @@ locals {
 
     team_members = values({ for team in local.teams : 
         team.name => { for member in team.members : 
-            "${team.name}-${member}" => {team = team.name, member =  member }  } })[0]
+            "${team.name}-${member}" => {team = team.name, member =  member } } })[0]
 }
 
 resource "github_team" "managed_teams" {
